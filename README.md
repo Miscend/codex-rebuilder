@@ -10,6 +10,7 @@ This project allows you to port the official Arm64 (Apple Silicon) Codex Desktop
     npm install -g @openai/codex
     ```
 3.  **Codex.dmg**: The official Arm64 installer (place it in this directory).
+    -   Download: [https://persistent.oaistatic.com/codex-app-prod/Codex.dmg](https://persistent.oaistatic.com/codex-app-prod/Codex.dmg)
 
 ## How to Build
 

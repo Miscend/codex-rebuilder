@@ -10,7 +10,21 @@ const DMG_PATH = path.join(REPO_ROOT, 'Codex.dmg');
 const TEMP_DIR = path.join(REPO_ROOT, 'temp_build');
 const FINAL_APP_PATH = path.join(REPO_ROOT, 'Codex_Intel.app');
 const RESOURCES_DIR = path.join(REPO_ROOT, 'resources');
-const CODEX_CLI_PATH = '/usr/local/lib/node_modules/@openai/codex';
+// detect CODEX_CLI_PATH dynamically
+let CODEX_CLI_PATH = '/usr/local/lib/node_modules/@openai/codex';
+
+try {
+    const globalRoot = execSync('npm root -g', { encoding: 'utf8' }).trim();
+    const possiblePath = path.join(globalRoot, '@openai/codex');
+    if (fs.existsSync(possiblePath)) {
+        CODEX_CLI_PATH = possiblePath;
+        console.log(`Detected Codex CLI at: ${CODEX_CLI_PATH}`);
+    } else {
+        console.log(`Could not find @openai/codex at ${possiblePath}, using default: ${CODEX_CLI_PATH}`);
+    }
+} catch (e) {
+    console.warn("Could not auto-detect npm root. Using default path.");
+}
 
 // Helper for executing commands
 function run(cmd, cwd = REPO_ROOT) {
