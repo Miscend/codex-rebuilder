@@ -50,8 +50,21 @@ To update:
 3.  Run `node rebuild_codex.js` again.
 4.  If the Codex CLI also updated, run `npm update -g @openai/codex` before rebuilding.
 
+## Security Note
+
+The built app launches with the `--no-sandbox` Electron flag via a wrapper script at `Contents/MacOS/Codex`. This disables Chromium's internal process sandbox, which is necessary to allow tools like **Playwright** to spawn browser subprocesses from within the integrated terminal.
+
+This is separate from the macOS Seatbelt sandbox that Codex uses for workspace isolation. To enable network access inside the Codex terminal, set the following in your Codex `config.toml`:
+
+```toml
+[sandbox_workspace_write]
+network_access = true
+```
+
 ## Troubleshooting
 
--   **Blank Window**: Usually means the executable name doesn't match `Info.plist`, triggering development mode. The script handles this by renaming `Electron` to `Codex`.
--   **Missing Binary**: Ensure the Codex CLI is installed at `/usr/local/lib/node_modules/@openai/codex`.
+-   **Blank Window**: Usually means the executable name doesn't match `Info.plist`. The script handles this via a wrapper at `Contents/MacOS/Codex` that launches `Codex.orig`.
+-   **Missing Binary**: Ensure the Codex CLI is installed globally (`npm install -g @openai/codex`).
+-   **No Network in Terminal**: Set `network_access = true` in your Codex `config.toml` (see Security Note above).
+-   **Playwright / Browser Spawning**: Should work out of the box thanks to `--no-sandbox`. If issues persist, ensure network access is enabled.
 -   **Crashes**: Check console logs. If `sparkle.node` (auto-updater) crashes, ignore it; the app should still function.

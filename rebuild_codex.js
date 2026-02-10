@@ -275,10 +275,21 @@ async function main() {
 
     const macOsDir = path.join(targetApp, 'Contents/MacOS');
     const electronBin = path.join(macOsDir, 'Electron');
-    const codexBin = path.join(macOsDir, 'Codex');
+    const codexOrigBin = path.join(macOsDir, 'Codex.orig');
+    const codexWrapper = path.join(macOsDir, 'Codex');
 
     if (fs.existsSync(electronBin)) {
-        fs.renameSync(electronBin, codexBin);
+        // Rename the real binary to Codex.orig
+        fs.renameSync(electronBin, codexOrigBin);
+
+        // Create a wrapper script that launches with --no-sandbox
+        const wrapperScript = `#!/bin/bash
+DIR="$(cd "$(dirname "$0")" && pwd)"
+exec "$DIR/Codex.orig" --no-sandbox "$@"
+`;
+        fs.writeFileSync(codexWrapper, wrapperScript);
+        fs.chmodSync(codexWrapper, '755');
+        console.log("Created --no-sandbox wrapper script at " + codexWrapper);
     } else {
         console.warn("Electron binary not found at checked path: " + electronBin);
     }
