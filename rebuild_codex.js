@@ -38,6 +38,30 @@ function run(cmd, cwd = REPO_ROOT) {
 }
 
 async function main() {
+    // Handle --clean flag
+    const cleanBuild = process.argv.includes('--clean');
+    if (cleanBuild) {
+        console.log("Clean build requested. Removing cached/transient files...");
+        const toRemove = [
+            RESOURCES_DIR,
+            TEMP_DIR,
+            path.join(REPO_ROOT, 'native_build_temp'),
+            FINAL_APP_PATH,
+            path.join(REPO_ROOT, 'package.json'),
+        ];
+        // Also remove any cached electron zips
+        const electronZips = fs.readdirSync(REPO_ROOT).filter(f => f.startsWith('electron-') && f.endsWith('.zip'));
+        electronZips.forEach(f => toRemove.push(path.join(REPO_ROOT, f)));
+
+        for (const p of toRemove) {
+            if (fs.existsSync(p)) {
+                console.log(`  Removing ${path.basename(p)}`);
+                fs.rmSync(p, { recursive: true, force: true });
+            }
+        }
+        console.log("Clean complete.\n");
+    }
+
     console.log("Starting Codex Rebuilder...");
 
     // 1. Prepare Resources (Mount DMG if needed)
@@ -368,6 +392,19 @@ exec "$DIR/Codex.orig" --no-sandbox "$@"
         execSync(`SetFile -d "${dateStr}" "${targetApp}"`, { stdio: 'inherit' });
     } catch (e) {
         console.warn("SetFile failed or not available (this is normal on non-macOS or minimal envs). Creation date might be old.");
+    }
+
+    // 9. Cleanup temp files
+    console.log("Cleaning up temporary files...");
+    for (const dir of [TEMP_DIR, tempBuildDir]) {
+        if (fs.existsSync(dir)) {
+            fs.rmSync(dir, { recursive: true, force: true });
+        }
+    }
+    // Remove extracted package.json
+    const extractedPkgJson = path.join(REPO_ROOT, 'package.json');
+    if (fs.existsSync(extractedPkgJson)) {
+        fs.unlinkSync(extractedPkgJson);
     }
 
     console.log("Done! Codex_Intel.app is ready at " + targetApp);

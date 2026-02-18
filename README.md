@@ -20,12 +20,20 @@ Run the rebuild script:
 node rebuild_codex.js
 ```
 
+For a fully clean build (removes all cached and transient files first):
+
+```bash
+node rebuild_codex.js --clean
+```
+
 This script will:
 1.  Mount `Codex.dmg` and extract the app logic (`app.asar`), icon, and configuration.
 2.  Download the compatible x64 Electron runtime.
 3.  Rebuild native modules (`better-sqlite3`, `node-pty`) for Intel architecture.
 4.  Copy the x64 `codex` binary from your local CLI installation.
 5.  Generate `Codex_Intel.app`.
+
+> **Note:** The script caches the extracted resources and downloaded Electron zip to speed up subsequent builds. Use `--clean` if you've updated `Codex.dmg` or the CLI to ensure stale files aren't reused.
 
 ## How to Run
 
@@ -47,8 +55,8 @@ xattr -cr Codex_Intel.app
 To update:
 1.  Download the new `Codex.dmg` from OpenAI.
 2.  Replace the old `Codex.dmg` in this folder.
-3.  Run `node rebuild_codex.js` again.
-4.  If the Codex CLI also updated, run `npm update -g @openai/codex` before rebuilding.
+3.  If the Codex CLI also updated, run `npm update -g @openai/codex`.
+4.  Run `node rebuild_codex.js --clean` to ensure a fresh build with the new files.
 
 ## Security Note
 
